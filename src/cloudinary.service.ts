@@ -1,48 +1,56 @@
 /* eslint-disable import/named */
 import { Readable } from "node:stream";
 
-import { Inject, Injectable, Logger } from "@nestjs/common";
+import { Inject, Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import {
-    ResourceType,
-    UploadApiErrorResponse,
-    UploadApiOptions,
-    UploadApiResponse,
-    v2 as cloudinary,
-} from "cloudinary";
-import sharp from "sharp";
+  ResourceType,
+  UploadApiErrorResponse,
+  UploadApiOptions,
+  UploadApiResponse,
+  v2 as cloudinary,
+} from 'cloudinary';
+import sharp from 'sharp';
 
-import { CloudinaryModuleOptions } from "./cloudinary.options";
+import { CloudinaryModuleOptions } from './cloudinary.options';
 import {
-    IFile,
-    ISharpInputOptions,
-    ISignedUploadUrlOptions,
-} from "./interfaces";
-import { MODULE_OPTIONS_TOKEN } from "./cloudinary.module-definition";
-import { defaultCreateSignedUploadUrlOptions } from "./cloudinary.constant";
+  IFile,
+  ISharpInputOptions,
+  ISignedUploadUrlOptions,
+} from './interfaces';
+import { MODULE_OPTIONS_TOKEN } from './cloudinary.module-definition';
+import { defaultCreateSignedUploadUrlOptions } from './cloudinary.constant';
 
 @Injectable()
-export class CloudinaryService {
-    private logger = new Logger(CloudinaryService.name);
-    public readonly cloudinary = cloudinary;
+export class CloudinaryService implements OnModuleInit {
+  private logger = new Logger(CloudinaryService.name);
+  public readonly cloudinary = cloudinary;
 
-    constructor(
-        @Inject(MODULE_OPTIONS_TOKEN)
-        private readonly options: CloudinaryModuleOptions
-    ) {
-        this.cloudinary.config(Object.assign({}, options));
-    }
+  constructor(
+    @Inject(MODULE_OPTIONS_TOKEN)
+    private readonly options: CloudinaryModuleOptions,
+  ) {
+    this.cloudinary.config(Object.assign({}, options));
+  }
 
-    pingCloudinary() {
-        cloudinary.api
-            .ping()
-            .then((res) => {
-                this.logger.log(`Cloudinary connection ${res.status}`);
-            })
-            .catch((err) => {
-                this.logger.warn("Cloudinary connection failed.");
-                this.logger.error(err.error);
-            });
-    }
+  async onModuleInit() {
+    await this.pingCloudinary();
+  }
+
+  pingCloudinary() {
+    return new Promise((resolve, reject) => {
+      cloudinary.api
+        .ping()
+        .then(res => {
+          this.logger.log(`Cloudinary connection ${res.status}`);
+          resolve(res);
+        })
+        .catch(err => {
+          this.logger.warn('Cloudinary connection failed.');
+          this.logger.error(err.error);
+          reject(err);
+        });
+    });
+  }
 
     /**
      * It takes a file, uploads it to cloudinary, and returns a promise
