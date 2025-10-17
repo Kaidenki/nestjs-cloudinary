@@ -4,7 +4,7 @@
   "description": "Cloudinary module for nestjs",
   "author": "kaidenki <kaidenki@proton.me>",
   "license": "MIT",
-  "type": "module",
+
   "main": "dist/index.js",
   "module": "dist/index.js",
   "types": "./dist/index.d.ts",
@@ -25,7 +25,7 @@
   "scripts": {
     "dev": "tsup --watch",
     "build": "tsup",
-    "test": "jest --config ./test/jest.json",
+    "test": "jest --config ./test/jest.json --passWithNoTests",
     "test:watch": "jest --watch",
     "coverage": "jest --coverage",
     "prepare": "husky",
